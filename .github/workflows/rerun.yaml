@@ -1,0 +1,20 @@
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bot actions
+        uses: zymap/bot@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # replace here to your token
+        with:
+          repo_owner: benmoss  # replace here to your repo owner
+          repo_name: eventing # replace here to your repo name
+          rerun_cmd: rerun failure checks
+          comment: ${{ github.event.comment.body }}
