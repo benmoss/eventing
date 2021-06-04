@@ -11,7 +11,3 @@ jobs:
         uses: benmoss/actions-rerun-workflow@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # replace here to your token
-        with:
-          repo_owner: benmoss
-          repo_name: eventing
-          comment: ${{ github.event.comment.body }}
