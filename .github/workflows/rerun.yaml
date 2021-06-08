@@ -1,0 +1,19 @@
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bot actions
+        uses: benmoss/actions-rerun-workflow@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # replace here to your token
+        with:
+          repo_owner: benmoss
+          repo_name: eventing
+          comment: ${{ github.event.comment.body }}
