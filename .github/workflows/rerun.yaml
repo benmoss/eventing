@@ -1,13 +1,13 @@
+name: Check for rerun comments
+
 on:
   issue_comment:
     types: [created]
 
 jobs:
   bot:
+    name: Do the thing
     runs-on: ubuntu-latest
-
     steps:
-      - name: Bot actions
-        uses: benmoss/actions-rerun-workflow@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # replace here to your token
+    - name: Bot actions
+      uses: benmoss/actions-rerun-workflow@main
