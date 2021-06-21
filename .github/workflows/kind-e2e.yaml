@@ -139,6 +139,13 @@ jobs:
         source ./vendor/knative.dev/hack/infra-library.sh
         wait_until_pods_running ${SYSTEM_NAMESPACE}
 
+    - name: Log events
+      run: |
+        set -e
+        mkdir -p ${{ env.ARTIFACTS }}
+        cd ${{ env.ARTIFACTS }}
+        kubectl get events -o custom-columns=TS:metadata.creationTimestamp,Namespace:metadata.namespace,Type:type,Reason:reason,Object:involvedObject,Message:message -A -w > events.log &
+
     - name: Run e2e Tests
       run: |
         export GO111MODULE=on
@@ -174,6 +181,25 @@ jobs:
           kubectl get events --all-namespaces=true
         echo '::endgroup::'
 
+    - name: Fail if anything fails
+      run: |
+        set -e
+        exitCode=0
+        for ns in kube-system "$SYSTEM_NAMESPACE"; do
+          echo "::group:: pods in $ns"
+          failed=$(kubectl get pods -n "$ns" -o json | jq '.items[] | select(.status.containerStatuses[] | .restartCount > 0)')
+          if [ -n "$failed" ]; then
+            exitCode=1
+            echo "::group:: failed pod json"
+            echo "$failed"
+            echo '::endgroup::'
+            echo "::group:: failed pod logs"
+            kubectl -n "$ns" logs --previous $(echo "$failed" | jq -r '.metadata.name')
+            echo '::endgroup::'
+          fi
+          echo '::endgroup::'
+        done
+        exit $exitCode
     - name: Dump Artifacts
       if: ${{ failure() }}
       run: |
