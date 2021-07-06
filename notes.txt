@@ -1,0 +1,5 @@
+NewController:
+    r := &Reconciler{}
+    crdreconciler.NewImpl(r):
+        rec := reconcilerImpl // LeaderAwareFuncs
+        controller.NewImpl(rec)

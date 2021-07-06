@@ -43,7 +43,7 @@ func NewController(
 ) *controller.Impl {
 	logger := logging.FromContext(ctx)
 	crdInformer := crdinfomer.Get(ctx)
-
+	filterFunc := pkgreconciler.LabelFilterFunc(sources.SourceDuckLabelKey, sources.SourceDuckLabelValue, false)
 	r := &Reconciler{
 		ogctx:       ctx,
 		ogcmw:       cmw,
@@ -51,13 +51,14 @@ func NewController(
 	}
 	impl := crdreconciler.NewImpl(ctx, r, func(impl *controller.Impl) controller.Options {
 		return controller.Options{
-			AgentName: ReconcilerName,
+			AgentName:         ReconcilerName,
+			PromoteFilterFunc: filterFunc,
 		}
 	})
 
 	logger.Info("Setting up event handlers")
 	crdInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: pkgreconciler.LabelFilterFunc(sources.SourceDuckLabelKey, sources.SourceDuckLabelValue, false),
+		FilterFunc: filterFunc,
 		Handler:    controller.HandleAll(impl.Enqueue),
 	})
 
