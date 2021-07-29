@@ -200,6 +200,20 @@ jobs:
           echo '::endgroup::'
         done
         exit $exitCode
+
+    - name: Dump Artifacts
+      if: ${{ failure() }}
+      run: |
+        set -e
+        cd ${{ env.ARTIFACTS }}
+        for ns in kube-system "$SYSTEM_NAMESPACE"; do
+          echo "::group:: pods in $ns"
+          for pod in $(kubectl -n "$ns" get pods -o name); do
+            name=$(echo "$pod" | cut -d'/' -f2)
+            kubectl -n "$ns" logs "$pod" > "$name".log
+          done
+        done
+
     - name: Dump Artifacts
       if: ${{ failure() }}
       run: |
