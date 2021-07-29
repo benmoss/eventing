@@ -47,3 +47,6 @@ nodes:
 - role: worker
   image: kindest/node:${NODE_VERSION}@${NODE_SHA}
 EOF
+
+kubectl wait --for=condition=Ready nodes --all --timeout 2m
+kubectl wait --for=condition=Ready pods --all -n kube-system --timeout 2m
