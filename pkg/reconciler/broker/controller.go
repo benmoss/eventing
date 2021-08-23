@@ -38,6 +38,7 @@ import (
 	"knative.dev/pkg/injection/clients/dynamicclient"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/pkg/resolver"
 	"knative.dev/pkg/system"
 	"knative.dev/pkg/tracing"
 	tracingconfig "knative.dev/pkg/tracing/config"
@@ -84,6 +85,7 @@ func NewController(
 		configmapLister:    configmapInformer.Lister(),
 	}
 	impl := brokerreconciler.NewImpl(ctx, r, eventing.MTChannelBrokerClassValue)
+	r.uriResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
 
 	logger.Info("Setting up event handlers")
 

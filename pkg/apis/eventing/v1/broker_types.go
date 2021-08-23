@@ -92,6 +92,10 @@ type BrokerStatus struct {
 	// delivered into the Broker mesh.
 	// +optional
 	Address duckv1.Addressable `json:"address,omitempty"`
+
+	// DeadLetterSinkURI is the resolved URI of the dead letter sink for this Broker.
+	// +optional
+	DeadLetterSinkURI *apis.URL `json:"deadLetterSinkUri,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

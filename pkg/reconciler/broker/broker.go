@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	corev1listers "k8s.io/client-go/listers/core/v1"
 	"knative.dev/pkg/kmeta"
+	"knative.dev/pkg/resolver"
 
 	"knative.dev/pkg/apis"
 	duckapis "knative.dev/pkg/apis/duck"
@@ -65,6 +66,8 @@ type Reconciler struct {
 
 	// If specified, only reconcile brokers with these labels
 	brokerClass string
+
+	uriResolver *resolver.URIResolver
 }
 
 // Check that our Reconciler implements Interface
@@ -155,6 +158,16 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, b *eventingv1.Broker) pk
 		return err
 	}
 	b.Status.PropagateIngressAvailability(ingressEndpoints)
+
+	if b.Spec.Delivery != nil && b.Spec.Delivery.DeadLetterSink != nil {
+		dlqURI, err := r.uriResolver.URIFromDestinationV1(ctx, *b.Spec.Delivery.DeadLetterSink, b)
+		if err != nil {
+			logging.FromContext(ctx).Errorw("Unable to get the dead letter sink's URI", zap.Error(err))
+			b.Status.DeadLetterSinkURI = nil
+			return err
+		}
+		b.Status.DeadLetterSinkURI = dlqURI
+	}
 
 	// Route everything to shared ingress, just tack on the namespace/name as path
 	// so we can route there appropriately.
